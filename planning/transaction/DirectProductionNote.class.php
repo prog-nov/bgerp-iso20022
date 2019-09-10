@@ -141,6 +141,8 @@ class planning_transaction_DirectProductionNote extends acc_DocumentTransactionS
     {
         $entries = $array = array();
         $prodRec = cat_Products::fetch($productId, 'fixedAsset,canStore');
+        
+        // Дали артикула е производствен етап?
         $isStageProduct = cat_Products::haveDriver($productId, 'planning_interface_StageDriver');
         
         if ($prodRec->canStore == 'yes') {
