@@ -107,9 +107,8 @@ class planning_DirectProductNoteDetails extends deals_ManifactureDetail
         $form = &$data->form;
         $rec = &$form->rec;
         
-        $isStageProduct = cat_Products::haveDriver($data->masterRec->productId, 'planning_interface_StageDriver');
         $data->singleTitle = ($rec->type == 'pop') ? 'отпадък' : 'материал';
-        $data->defaultMeta = ($rec->type == 'pop' || $isStageProduct) ? 'canConvert,canStore' : 'canConvert';
+        $data->defaultMeta = ($rec->type == 'pop') ? 'canConvert,canStore' : 'canConvert';
         
         if (isset($rec->productId)) {
             $storable = cat_Products::fetchField($rec->productId, 'canStore');
@@ -124,8 +123,6 @@ class planning_DirectProductNoteDetails extends deals_ManifactureDetail
         
         if ($rec->type == 'pop') {
             $form->setField('storeId', 'input=none');
-        } elseif($isStageProduct){
-            $form->setField('storeId', 'mandatory');
         }
     }
     
