@@ -2662,7 +2662,7 @@ class cat_Products extends embed_Manager
         
         // Оставяме само записите където участват перата на частните артикули на произволно място
         $bQuery = acc_BalanceDetails::getQuery();
-        acc_BalanceDetails::filterQuery($bQuery, null, '321,323,60020,60201,61101,701,703', 25689);
+        acc_BalanceDetails::filterQuery($bQuery, null, '321,323,60020,60201,61101,701,703');
         
         $balances = array();
         foreach ($periods as $pId => $name) {
