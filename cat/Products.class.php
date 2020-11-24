@@ -2674,15 +2674,6 @@ class cat_Products extends embed_Manager
         $bQuery->show('ent1Id,ent2Id,ent3Id');
         $bQuery->groupBy('ent1Id,ent2Id,ent3Id');
         
-        
-        
-        
-        
-        
-        
-        bp($bQuery->fetchAll(), acc_Items::fetchItem('cat_products', 8098), cat_Products::fetch(8098));
-        
-        
         log_System::add('cat_Products', 'Details in:' . implode(',', $balances), null, 'info', 17);
         log_System::add('cat_Products', 'Balance Recs:' . $bQuery->count(), null, 'info', 17);
         
