@@ -2581,6 +2581,8 @@ class cat_Products extends embed_Manager
             $stProductsToClose[$iStRec->objectId] = $pRec1;
         }
         
+        bp($iStQuery, acc_Items::fetchItem('cat_products', 8098), cat_Products::fetch(8098));
+        
         $this->closeItems = $stProductsToClose;
         $this->saveArray($stProductsToClose, 'id,state,brState,modifiedBy,modifiedOn');
         
