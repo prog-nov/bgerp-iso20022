@@ -2641,21 +2641,6 @@ class cat_Products extends embed_Manager
         
         $oldestPeriod = acc_Periods::fetch(min(array_keys($periods)));
         
-        
-        
-        
-        bp($products, $periods, acc_Items::fetchItem('cat_products', 8098), cat_Products::fetch(8098));
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         // Намират се отворените пера, създадени преди посочената дата, които са на нестандартни артикули
         $iQuery = acc_Items::getQuery();
         $iQuery->where("#createdOn < '{$oldestPeriod->start}'");
@@ -2683,6 +2668,27 @@ class cat_Products extends embed_Manager
         foreach ($periods as $pId => $name) {
             $balances[] = acc_Balances::fetchField("#periodId = {$pId}");
         }
+        
+        
+        
+        
+        
+        
+        bp($productItems, $balances, acc_Items::fetchItem('cat_products', 8098), cat_Products::fetch(8098));
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         $bQuery->in('balanceId', $balances);
         $bQuery->where('#ent1Id IS NOT NULL || #ent2Id IS NOT NULL || #ent3Id IS NOT NULL');
