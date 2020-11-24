@@ -2581,7 +2581,7 @@ class cat_Products extends embed_Manager
             $stProductsToClose[$iStRec->objectId] = $pRec1;
         }
         
-        bp($iStQuery, acc_Items::fetchItem('cat_products', 8098), cat_Products::fetch(8098));
+        
         
         $this->closeItems = $stProductsToClose;
         $this->saveArray($stProductsToClose, 'id,state,brState,modifiedBy,modifiedOn');
@@ -2606,6 +2606,14 @@ class cat_Products extends embed_Manager
         $iTems = arr::extractValuesFromArray($iQuery2->fetchAll(), 'objectId');
         
         $diff = array_diff($products1, $iTems);
+        
+        
+        bp($iTems, $products1, $diff, acc_Items::fetchItem('cat_products', 8098), cat_Products::fetch(8098));
+        
+        
+        
+        
+        
         $saveDiff = array();
         foreach ($diff as $p1) {
             $pr1 = cat_Products::fetch($p1, 'id,state,brState');
