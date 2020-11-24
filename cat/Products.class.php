@@ -2662,38 +2662,26 @@ class cat_Products extends embed_Manager
         
         // Оставяме само записите където участват перата на частните артикули на произволно място
         $bQuery = acc_BalanceDetails::getQuery();
-        acc_BalanceDetails::filterQuery($bQuery, null, '321,323,60020,60201,61101,701,703');
+        acc_BalanceDetails::filterQuery($bQuery, null, '321,323,60020,60201,61101,701,703', 25689);
         
         $balances = array();
         foreach ($periods as $pId => $name) {
             $balances[] = acc_Balances::fetchField("#periodId = {$pId}");
         }
         
-        
-        
-        
-        
-        
-        bp($productItems, $balances, acc_Items::fetchItem('cat_products', 8098), cat_Products::fetch(8098));
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         $bQuery->in('balanceId', $balances);
         $bQuery->where('#ent1Id IS NOT NULL || #ent2Id IS NOT NULL || #ent3Id IS NOT NULL');
         $bQuery->show('ent1Id,ent2Id,ent3Id');
         $bQuery->groupBy('ent1Id,ent2Id,ent3Id');
+        
+        
+        
+        
+        
+        
+        
+        bp($bQuery->fetchAll(), acc_Items::fetchItem('cat_products', 8098), cat_Products::fetch(8098));
+        
         
         log_System::add('cat_Products', 'Details in:' . implode(',', $balances), null, 'info', 17);
         log_System::add('cat_Products', 'Balance Recs:' . $bQuery->count(), null, 'info', 17);
