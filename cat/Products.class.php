@@ -2607,13 +2607,6 @@ class cat_Products extends embed_Manager
         
         $diff = array_diff($products1, $iTems);
         
-        
-        bp($iTems, $products1, $diff, acc_Items::fetchItem('cat_products', 8098), cat_Products::fetch(8098));
-        
-        
-        
-        
-        
         $saveDiff = array();
         foreach ($diff as $p1) {
             $pr1 = cat_Products::fetch($p1, 'id,state,brState');
@@ -2647,6 +2640,21 @@ class cat_Products extends embed_Manager
         }
         
         $oldestPeriod = acc_Periods::fetch(min(array_keys($periods)));
+        
+        
+        
+        
+        bp($products, $periods, acc_Items::fetchItem('cat_products', 8098), cat_Products::fetch(8098));
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         // Намират се отворените пера, създадени преди посочената дата, които са на нестандартни артикули
         $iQuery = acc_Items::getQuery();
