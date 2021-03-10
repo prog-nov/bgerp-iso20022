@@ -8,7 +8,7 @@
  * @package   planning
  *
  * @author    Ivelin Dimov <ivelin_pdimov@abv.com>
- * @copyright 2006 - 2014 Experta OOD
+ * @copyright 2006 - 2021 Experta OOD
  * @license   GPL 3
  *
  * @since     v 0.1
@@ -60,45 +60,64 @@ class planning_transaction_ReturnNote extends acc_DocumentTransactionSource
         
         $dQuery = planning_ReturnNoteDetails::getQuery();
         $dQuery->where("#noteId = {$rec->id}");
+
+        $jobReff = null;
+        $firstDocument = doc_Threads::getFirstDocument($rec->threadId);
+        if($firstDocument->isInstanceOf('planning_Tasks')) {
+            $firstDocument = doc_Containers::getDocument($firstDocument->fecthField('originId'));
+        }
+        if($firstDocument->isInstanceOf('planning_Jobs')) {
+            $jobReff = $firstDocument;
+        }
+
         while ($dRec = $dQuery->fetch()) {
             $productsArr[$dRec->productId] = $dRec->productId;
             $creditArr = null;
             
             if ($rec->useResourceAccounts == 'yes') {
-                $creditArr = array('61101', array('cat_Products', $dRec->productId),
-                    'quantity' => $dRec->quantity);
-                
-                $reason = 'Връщане на материал от производството';
+
+                if(isset($jobReff)){
+                    $creditArr = array('61104', array('planning_Jobs', $jobReff->that), array('cat_Products', $dRec->productId), 'quantity' => $dRec->quantity);
+                } else {
+                    $rec->departmentId = isset($rec->departmentId) ? $rec->departmentId : planning_Centers::UNDEFINED_ACTIVITY_CENTER_ID;
+                    $creditArr = array('61103', array('planning_Centers', $rec->departmentId), array('cat_Products', $dRec->productId), 'quantity' => $dRec->quantity);
+                }
             }
             
             // Ако не е ресурс, кредитираме общата сметка за разходи '61102. Други разходи (общо)'
+
+            $prodRec = cat_Products::fetch($dRec->productId, 'canStore,fixedAsset');
+            if($prodRec->canStore == 'yes'){
+                $debitArr = array('321', array('store_Stores', $rec->storeId), array('cat_Products', $dRec->productId), 'quantity' => $dRec->quantity);
+                $reason = 'Влагане на материал в производството';
+            } else {
+                $expenseItem = ($prodRec->fixedAsset == 'yes') ? array('cat_Products', $dRec->productId) : acc_Items::forceSystemItem('Неразпределени разходи', 'unallocated', 'costObjects')->id;
+                $debitArr = array('60201', $expenseItem, array('cat_Products', $dRec->productId), 'quantity' => $dRec->quantity);
+                $reason = 'Влагане на услуга в производството';
+            }
+
             $averageAmount = null;
             if (empty($creditArr)) {
                 $creditArr = array('61102');
                 $reason = 'Връщане от производство без детайли';
-                
+
                 // Сумата с която ще върнем артикула в склада е неговата средно претеглена
                 $averageAmount = cat_Products::getWacAmountInStore($dRec->quantity, $dRec->productId, $rec->valior, $rec->storeId);
-                
+
                 if (!isset($averageAmount)) {
                     $averageAmount = cat_Products::getPrimeCost($dRec->productId);
                     if (isset($averageAmount)) {
                         $averageAmount = $dRec->quantity * $averageAmount;
                     }
                 }
-                
+
                 if (!isset($averageAmount)) {
                     $errorArr[] = cls::get('cat_Products')->getTitleById($dRec->productId);
                     $averageAmount = 0;
                 }
             }
-            
-            $entry = array('debit' => array(321,
-                array('store_Stores', $rec->storeId),
-                array('cat_Products', $dRec->productId),
-                'quantity' => $dRec->quantity),
-            'credit' => $creditArr,
-            'reason' => $reason);
+
+            $entry = array('debit' => $debitArr, 'credit' => $creditArr, 'reason' => $reason);
             
             if (!is_null($averageAmount)) {
                 $entry['amount'] = $averageAmount;
@@ -115,8 +134,8 @@ class planning_transaction_ReturnNote extends acc_DocumentTransactionSource
                 acc_journal_RejectRedirect::expect(false, "Артикулите: |{$errorArr}|* не могат да бъдат върнати защото липсва себестойност");
             }
             
-            $msg = "трябва да са складируеми и вложими";
-            if($redirectError = deals_Helper::getContoRedirectError($productsArr, 'canConvert,canStore', null, $msg)){
+            $msg = "трябва да са вложими";
+            if($redirectError = deals_Helper::getContoRedirectError($productsArr, 'canConvert', null, $msg)){
                 
                 acc_journal_RejectRedirect::expect(false, $redirectError);
             }

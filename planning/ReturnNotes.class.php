@@ -155,7 +155,7 @@ class planning_ReturnNotes extends deals_ManifactureMaster
     public function description()
     {
         parent::setDocumentFields($this);
-        $this->FLD('departmentId', 'key(mvc=planning_Centers,select=name,allowEmpty)', 'caption=Ц-р на дейност,before=note');
+        $this->FLD('departmentId', 'key(mvc=planning_Centers,select=name,allowEmpty)', 'caption=Ц-р на дейност,before=note,mandatory');
         $this->FLD('useResourceAccounts', 'enum(yes=Да,no=Не)', 'caption=Детайлно връщане,notNull,default=yes,maxRadio=2,before=note');
     }
     
