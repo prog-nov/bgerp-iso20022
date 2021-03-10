@@ -104,7 +104,9 @@ class planning_DirectProductNoteDetails extends deals_ManifactureDetail
         $this->setField('quantity', 'caption=Количества');
         $this->FLD('quantityFromBom', 'double', 'caption=От рецепта,input=none,smartCenter');
         $this->FLD('storeId', 'key(mvc=store_Stores,select=name,allowEmpty)', 'caption=Изписване от,input=none,tdClass=small-field nowrap,placeholder=Незавършено производство');
-        
+        $this->FLD('fromAccId', 'customKey(mvc=acc_Accounts,key=sysId,select=sysId)', 'caption=Сметка,input=none,tdClass=small-field nowrap,placeholder=Незавършено производство');
+        $this->FNC('from', 'varchar', 'caption=Изписване от,smartCenter,input=none');
+
         $this->setDbIndex('productId');
         $this->setDbIndex('noteId,type');
     }
@@ -122,16 +124,31 @@ class planning_DirectProductNoteDetails extends deals_ManifactureDetail
         $rec = &$form->rec;
         $data->singleTitle = ($rec->type == 'pop') ? 'отпадък' : 'материал';
         $data->defaultMeta = ($rec->type == 'pop') ? 'canConvert,canStore' : 'canConvert';
-        
+
         if (isset($rec->productId)) {
+            $form->setField('from', 'input');
             $storable = cat_Products::fetchField($rec->productId, 'canStore');
+            $fromOptions = array('d' => (object) array('group' => true, 'title' => tr('Незавършено производство'))) + array('acc|61103' => tr('от Заданието'), 'acc|61104' => tr('от Центъра на дейност'));
+
             if ($storable == 'yes') {
-                $form->setField('storeId', 'input');
-                
+                $storeOptions = cls::get('store_Stores')->makeArray4Select('name', "#state != 'rejected'");
+                if(countR($storeOptions)){
+                    $fromOptions += array('s' => (object) array('group' => true, 'title' => tr('Склад'))) + $storeOptions;
+                }
+
                 if (empty($rec->id) && isset($data->masterRec->inputStoreId)) {
-                    $form->setDefault('storeId', $data->masterRec->inputStoreId);
+                    $form->setDefault('from', $data->masterRec->inputStoreId);
+                }
+
+                if(isset($rec->storeId)){
+                    $form->setDefault('from', $rec->storeId);
                 }
             }
+
+            if(isset($rec->fromAccId)){
+                $form->setDefault('from', "acc|{$rec->fromAccId}");
+            }
+            $form->setOptions('from', array('' => '') + $fromOptions);
         }
         
         if ($rec->type == 'pop') {
@@ -166,6 +183,14 @@ class planning_DirectProductNoteDetails extends deals_ManifactureDetail
                     if (!isset($selfValue)) {
                         $form->setError('productId', 'Отпадъкът няма себестойност');
                     }
+                }
+
+                if(strpos($rec->from,'acc|') !== false){
+                    $rec->fromAccId = str_replace('acc|', '', $rec->from);
+                    $rec->storeId = null;
+                } else {
+                    $rec->storeId = $rec->from;
+                    $rec->fromAccId = null;
                 }
             }
         }
